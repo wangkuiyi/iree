@@ -310,14 +310,16 @@ static iree_status_t iree_hal_metal_device_queue_execute(
 
   @autoreleasepool {
     // First create a new command buffer and encode wait commands for all wait semaphores.
-    id<MTLCommandBuffer> wait_command_buffer =
-        [device->queue commandBufferWithUnretainedReferences];  // autoreleased
-    for (iree_host_size_t i = 0; i < wait_semaphore_list.count; ++i) {
-      [wait_command_buffer
-          encodeWaitForEvent:iree_hal_metal_shared_event_handle(wait_semaphore_list.semaphores[i])
-                       value:wait_semaphore_list.payload_values[i]];
+    if (wait_semaphore_list.count > 0) {
+      id<MTLCommandBuffer> wait_command_buffer =
+          [device->queue commandBufferWithUnretainedReferences];  // autoreleased
+      for (iree_host_size_t i = 0; i < wait_semaphore_list.count; ++i) {
+        [wait_command_buffer
+            encodeWaitForEvent:iree_hal_metal_shared_event_handle(wait_semaphore_list.semaphores[i])
+                         value:wait_semaphore_list.payload_values[i]];
+      }
+      [wait_command_buffer commit];
     }
-    [wait_command_buffer commit];
 
     // Then commit all recorded compute command buffers.
     for (iree_host_size_t i = 0; i < command_buffer_count; ++i) {
@@ -325,14 +327,16 @@ static iree_status_t iree_hal_metal_device_queue_execute(
     }
 
     // Finally create a new command buffer and encode signal commands for all signal semaphores.
-    id<MTLCommandBuffer> signal_command_buffer =
-        [device->queue commandBufferWithUnretainedReferences];  // autoreleased
-    for (iree_host_size_t i = 0; i < signal_semaphore_list.count; ++i) {
-      [signal_command_buffer
-          encodeSignalEvent:iree_hal_metal_shared_event_handle(signal_semaphore_list.semaphores[i])
-                      value:signal_semaphore_list.payload_values[i]];
+    if (signal_semaphore_list.count > 0) {
+      id<MTLCommandBuffer> signal_command_buffer =
+          [device->queue commandBufferWithUnretainedReferences];  // autoreleased
+      for (iree_host_size_t i = 0; i < signal_semaphore_list.count; ++i) {
+        [signal_command_buffer encodeSignalEvent:iree_hal_metal_shared_event_handle(
+                                                     signal_semaphore_list.semaphores[i])
+                                           value:signal_semaphore_list.payload_values[i]];
+      }
+      [signal_command_buffer commit];
     }
-    [signal_command_buffer commit];
   }
 
   IREE_TRACE_ZONE_END(z0);
