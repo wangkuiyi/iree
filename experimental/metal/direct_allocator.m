@@ -161,7 +161,7 @@ static MTLResourceOptions iree_hal_metal_select_resource_options(
 #endif
     } else {
       // Device local + host invisible.
-      options = MTLResourceStorageModePrivate;
+      options = MTLResourceStorageModeShared;
     }
   } else {
     if (iree_all_bits_set(type, IREE_HAL_MEMORY_TYPE_DEVICE_VISIBLE)) {
@@ -184,9 +184,7 @@ static MTLResourceOptions iree_hal_metal_select_resource_options(
     options |= MTLResourceCPUCacheModeWriteCombined;
   }
 
-  options |= resource_tracking_mode == IREE_HAL_METAL_RESOURCE_HAZARD_TRACKING_MODE_TRACKED
-                 ? MTLResourceHazardTrackingModeTracked
-                 : MTLResourceHazardTrackingModeUntracked;
+  options |= MTLResourceHazardTrackingModeTracked;
   return options;
 }
 

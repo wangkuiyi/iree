@@ -111,7 +111,8 @@ static iree_status_t iree_hal_metal_device_create_internal(
     device->host_allocator = host_allocator;
     device->device = [metal_device retain];          // +1
     device->queue = [metal_device newCommandQueue];  // +1
-    device->command_buffer_resource_reference_mode = params->command_buffer_resource_reference_mode;
+    device->command_buffer_resource_reference_mode =
+        IREE_HAL_METAL_COMMAND_BUFFER_RESOURCE_REFERENCE_MODE_RETAINED;
     device->builtin_executable = builtin_executable;
     dispatch_queue_attr_t queue_attr = dispatch_queue_attr_make_with_qos_class(
         DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, /*relative_priority=*/0);
